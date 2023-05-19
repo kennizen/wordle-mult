@@ -61,7 +61,6 @@ function App() {
         }
 
         setCurRow(nextSibling as HTMLInputElement);
-        console.log(e.key);
     }
 
     function handleSetCurRow() {
@@ -94,7 +93,10 @@ function App() {
         }
 
         for (let i = 0; i < typedWord.length; i++) {
-            if (freqObj[typedWord[i]] !== undefined && freqObj[typedWord[i]] > 0) {
+            if (
+                freqObj[typedWord[i]] !== undefined &&
+                freqObj[typedWord[i]] > 0
+            ) {
                 freqObj[typedWord[i]] -= 1;
                 if (posObj[i] === typedWord[i]) {
                     inuputSet[i].classList.add("bg-green-300");
@@ -117,7 +119,10 @@ function App() {
     }, [curRowNum, wordLen]);
 
     useEffect(() => {
-        const word = WORDS[Math.floor(Math.random() * (WORDS.length - 0 + 1) + 0)].toLowerCase();
+        const word =
+            WORDS[
+                Math.floor(Math.random() * (WORDS.length - 0 + 1) + 0)
+            ].toLowerCase();
         setOriWord(word);
         setWordLen(word.length);
     }, []);
@@ -136,11 +141,17 @@ function App() {
             <section className="flex w-full h-[65%]">
                 <div className="w-96 bg-red-300"></div>
                 <div className="flex-1 flex items-center justify-center">
-                    <div ref={parentRef} className="max-w-sm flex flex-col items-center gap-y-2">
+                    <div
+                        ref={parentRef}
+                        className="max-w-sm flex flex-col items-center gap-y-2"
+                    >
                         {Array(6)
                             .fill(0)
                             .map((_, index) => (
-                                <div className="flex items-center gap-x-1" key={index}>
+                                <div
+                                    className="flex items-center gap-x-1"
+                                    key={index}
+                                >
                                     {Array(wordLen)
                                         .fill(0)
                                         .map((_, i) => (
