@@ -14,32 +14,37 @@ const Board = () => {
     const parentRef = useRef<null | HTMLDivElement>(null);
 
     // functions
-    function handleOnChange(e: KeyboardEvent) {
+    function handleOnKeyUp(e: KeyboardEvent) {
         console.log(e.key);
 
         if (e.key === "Enter" && isLast) {
             setCurRowNum((prev) => prev + 1);
-            checkForCorrectness();
+            let typedWord = "";
+
+            for (let i = 0; i < inuputSet.length; i++) {
+                typedWord += inuputSet[i].value.toLowerCase();
+            }
+
+            if (typedWord === oriWord) handleWinCondition();
+            else checkForCorrectness(typedWord);
+
             setIsLast(false);
             return;
         }
 
         if (e.key === "Backspace" && curRow !== null) {
-            const prevSibling = curRow.previousSibling;
-            if (prevSibling === null) return;
+            const prevSibling = curRow.previousSibling as HTMLInputElement | null;
 
-            console.log(prevSibling);
+            if (prevSibling === null) return;
 
             if (isLast) {
                 curRow.value = "";
                 curRow.classList.remove("animate-scale-in-out");
                 setIsLast(false);
             } else {
-                (prevSibling as HTMLInputElement).value = "";
-                (prevSibling as HTMLInputElement).classList.remove(
-                    "animate-scale-in-out"
-                );
-                setCurRow(prevSibling as HTMLInputElement);
+                prevSibling.value = "";
+                prevSibling.classList.remove("animate-scale-in-out");
+                setCurRow(prevSibling);
             }
 
             const poppedInputSet = [...inuputSet];
@@ -76,15 +81,10 @@ const Board = () => {
         }
     }
 
-    function checkForCorrectness() {
+    function checkForCorrectness(typedWord: string) {
         // make two objs
         const freqObj: { [key: string]: any } = {};
         const posObj: { [key: string]: any } = {};
-        let typedWord = "";
-
-        for (let i = 0; i < inuputSet.length; i++) {
-            typedWord += inuputSet[i].value.toLowerCase();
-        }
 
         console.log({ typedWord });
 
@@ -95,13 +95,9 @@ const Board = () => {
         }
 
         for (let i = 0; i < typedWord.length; i++) {
-            if (
-                freqObj[typedWord[i]] !== undefined &&
-                freqObj[typedWord[i]] > 0
-            ) {
+            if (freqObj[typedWord[i]] !== undefined && freqObj[typedWord[i]] > 0) {
                 freqObj[typedWord[i]] -= 1;
-                if (posObj[i] === typedWord[i])
-                    inuputSet[i].classList.add("bg-green-300");
+                if (posObj[i] === typedWord[i]) inuputSet[i].classList.add("bg-green-300");
                 else inuputSet[i].classList.add("bg-amber-300");
             } else inuputSet[i].classList.add("bg-gray-300");
         }
@@ -110,12 +106,21 @@ const Board = () => {
 
         console.log(freqObj, posObj);
     }
+
+    function handleWinCondition() {
+        for (let i = 0; i < inuputSet.length; i++) {
+            inuputSet[i].classList.remove("animate-scale-in-out");
+            setTimeout(() => {
+                inuputSet[i].classList.add("animate-scale-in-out");
+                inuputSet[i].classList.add("bg-green-300");
+                if (i >= inuputSet.length - 1) console.log("won");
+            }, i * 100);
+        }
+    }
+
     // lifecycles
     useEffect(() => {
-        const word =
-            WORDS[
-                Math.floor(Math.random() * (WORDS.length - 0 + 1) + 0)
-            ].toLowerCase();
+        const word = WORDS[Math.floor(Math.random() * (WORDS.length - 0 + 1) + 0)].toLowerCase();
         setOriWord(word);
         setWordLen(word.length);
     }, []);
@@ -125,19 +130,16 @@ const Board = () => {
     }, [curRowNum, wordLen]);
 
     useEffect(() => {
-        document.addEventListener("keyup", handleOnChange);
+        document.addEventListener("keyup", handleOnKeyUp);
         return () => {
-            document.removeEventListener("keyup", handleOnChange);
+            document.removeEventListener("keyup", handleOnKeyUp);
         };
     }, [curRow, isLast]);
 
     console.log(curRow, inuputSet, oriWord);
 
     return (
-        <div
-            ref={parentRef}
-            className="max-w-sm flex flex-col items-center gap-y-2"
-        >
+        <div ref={parentRef} className="max-w-sm flex flex-col items-center gap-y-2">
             {Array(6)
                 .fill(0)
                 .map((_, index) => (
@@ -148,7 +150,7 @@ const Board = () => {
                                 <input
                                     type="text"
                                     key={i}
-                                    className="border-2 border-slate-300 w-16 h-16 p-2 text-center text-2xl outline-none rounded-lg"
+                                    className="border-2 border-slate-200 w-16 h-16 p-2 text-center text-2xl outline-none rounded-lg del"
                                     maxLength={1}
                                     readOnly
                                 />
