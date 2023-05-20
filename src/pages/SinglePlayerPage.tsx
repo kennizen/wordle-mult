@@ -5,7 +5,7 @@ const SinglePlayerPage = () => {
     return (
         <MainLayout>
             <section className="flex w-full h-[65%]">
-                <div className="w-96 bg-red-300"></div>
+                <div className="w-96 bg-red-200"></div>
                 <div className="flex-1 flex items-center justify-center">
                     <Board />
                 </div>
