@@ -11,7 +11,7 @@ export default {
                 },
             },
             animation: {
-                "scale-in-out": "scaleInOut 0.3s ease-in-out",
+                "scale-in-out": "scaleInOut 0.2s linear",
             },
         },
     },

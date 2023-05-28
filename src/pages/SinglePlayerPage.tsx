@@ -1,4 +1,5 @@
 import Board from "../components/Board";
+import VirtualKeyboard from "../components/VirtualKeyboard";
 import MainLayout from "../layouts/MainLayout";
 
 const SinglePlayerPage = () => {
@@ -11,7 +12,9 @@ const SinglePlayerPage = () => {
                 </div>
                 <div className="w-96 bg-red-300"></div>
             </section>
-            <section></section>
+            <section className="p-2 flex justify-center">
+                <VirtualKeyboard />
+            </section>
         </MainLayout>
     );
 };

@@ -1,28 +1,37 @@
+import { useRecoilState, useRecoilValue } from "recoil";
 import { WORDS } from "../constants/5LetterWords";
 import { useEffect, useRef, useState } from "react";
+import { inputSetAtom, virtualKeyboardKeyAtom, virtualKeyboardMapAtom } from "../store/atoms";
 
 const Board = () => {
     // states
     const [wordLen, setWordLen] = useState(0);
     const [curRowNum, setCurRowNum] = useState(0);
-    const [curRow, setCurRow] = useState<null | HTMLInputElement>(null);
-    const [inuputSet, setInputSet] = useState<HTMLInputElement[]>([]);
+    const [curInput, setCurInput] = useState<null | HTMLInputElement>(null);
+    const [inputSet, setInputSet] = useRecoilState(inputSetAtom);
     const [oriWord, setOriWord] = useState("");
     const [isLast, setIsLast] = useState(false);
 
     // hooks
     const parentRef = useRef<null | HTMLDivElement>(null);
+    const virtualKeyboardKey = useRecoilValue(virtualKeyboardKeyAtom);
+    const virtualKeyboardMap = useRecoilValue(virtualKeyboardMapAtom);
 
     // functions
-    function handleOnKeyUp(e: KeyboardEvent) {
-        console.log(e.key);
+    function handleOnKeyUp(e: KeyboardEvent | string) {
+        let key = "";
 
-        if (e.key === "Enter" && isLast) {
+        if (typeof e === "string") key = e;
+        else key = e.key;
+
+        console.log(key);
+
+        if (key === "Enter" && isLast) {
             setCurRowNum((prev) => prev + 1);
             let typedWord = "";
 
-            for (let i = 0; i < inuputSet.length; i++) {
-                typedWord += inuputSet[i].value.toLowerCase();
+            for (let i = 0; i < inputSet.length; i++) {
+                typedWord += inputSet[i].value.toLowerCase();
             }
 
             if (typedWord === oriWord) handleWinCondition();
@@ -32,52 +41,55 @@ const Board = () => {
             return;
         }
 
-        if (e.key === "Backspace" && curRow !== null) {
-            const prevSibling = curRow.previousSibling as HTMLInputElement | null;
+        if (key === "Backspace" && curInput !== null) {
+            const prevSibling = curInput.previousSibling as HTMLInputElement | null;
 
             if (prevSibling === null) return;
 
             if (isLast) {
-                curRow.value = "";
-                curRow.classList.remove("animate-scale-in-out");
+                curInput.value = "";
+                curInput.classList.remove("animate-scale-in-out");
+                curInput.classList.remove("border-slate-400");
                 setIsLast(false);
             } else {
                 prevSibling.value = "";
                 prevSibling.classList.remove("animate-scale-in-out");
-                setCurRow(prevSibling);
+                prevSibling.classList.remove("border-slate-400");
+                setCurInput(prevSibling);
             }
 
-            const poppedInputSet = [...inuputSet];
+            const poppedInputSet = [...inputSet];
             poppedInputSet.pop();
             setInputSet(poppedInputSet);
 
             return;
         }
 
-        if (e.key.length > 1) return;
-        if (!/^[A-Za-z]+$/.test(e.key)) return;
-        if (curRow === null) return;
+        if (key.length > 1) return;
+        if (!/^[A-Za-z]+$/.test(key)) return;
+        if (curInput === null) return;
         if (isLast) return;
 
-        const nextSibling = curRow.nextSibling;
+        const nextSibling = curInput.nextSibling;
 
-        setInputSet((prev) => [...prev, curRow]);
-        curRow.value = e.key.toUpperCase();
-        curRow.classList.add("animate-scale-in-out");
+        setInputSet((prev) => [...prev, curInput]);
+        curInput.value = key;
+        curInput.classList.add("animate-scale-in-out");
+        curInput.classList.add("border-slate-400");
 
         if (nextSibling === null) {
             setIsLast(true);
             return;
         }
 
-        setCurRow(nextSibling as HTMLInputElement);
+        setCurInput(nextSibling as HTMLInputElement);
     }
 
     function handleSetCurRow() {
         if (parentRef && parentRef.current) {
             let childrens = parentRef.current.children[curRowNum];
             if (childrens === undefined) return;
-            setCurRow(childrens.children[0] as HTMLInputElement);
+            setCurInput(childrens.children[0] as HTMLInputElement);
         }
     }
 
@@ -95,25 +107,47 @@ const Board = () => {
         }
 
         for (let i = 0; i < typedWord.length; i++) {
-            if (freqObj[typedWord[i]] !== undefined && freqObj[typedWord[i]] > 0) {
-                freqObj[typedWord[i]] -= 1;
-                if (posObj[i] === typedWord[i]) inuputSet[i].classList.add("bg-green-300");
-                else inuputSet[i].classList.add("bg-amber-300");
-            } else inuputSet[i].classList.add("bg-gray-300");
+            setTimeout(() => {
+                virtualKeyboardMap[inputSet[i].value].classList.remove("bg-slate-300");
+                virtualKeyboardMap[inputSet[i].value].classList.add("text-white");
+
+                if (freqObj[typedWord[i]] !== undefined && freqObj[typedWord[i]] > 0) {
+                    freqObj[typedWord[i]] -= 1;
+
+                    if (posObj[i] === typedWord[i]) {
+                        inputSet[i].classList.add("bg-green-500");
+                        virtualKeyboardMap[inputSet[i].value].classList.add("bg-green-500");
+                    } else {
+                        inputSet[i].classList.add("bg-yellow-500");
+                        virtualKeyboardMap[inputSet[i].value].classList.add("bg-yellow-500");
+                    }
+                } else {
+                    inputSet[i].classList.add("bg-slate-500");
+                    virtualKeyboardMap[inputSet[i].value].classList.add("bg-slate-500");
+                }
+
+                inputSet[i].classList.add("border-none");
+                inputSet[i].classList.add("text-white");
+            }, i * 75);
         }
 
         setInputSet([]);
-
-        console.log(freqObj, posObj);
     }
 
     function handleWinCondition() {
-        for (let i = 0; i < inuputSet.length; i++) {
-            inuputSet[i].classList.remove("animate-scale-in-out");
+        for (let i = 0; i < inputSet.length; i++) {
+            inputSet[i].classList.remove("animate-scale-in-out");
+
             setTimeout(() => {
-                inuputSet[i].classList.add("animate-scale-in-out");
-                inuputSet[i].classList.add("bg-green-300");
-                if (i >= inuputSet.length - 1) console.log("won");
+                inputSet[i].classList.add("animate-scale-in-out");
+                inputSet[i].classList.add("bg-green-500");
+                inputSet[i].classList.add("border-none");
+                inputSet[i].classList.add("text-white");
+                virtualKeyboardMap[inputSet[i].value].classList.remove("bg-slate-300");
+                virtualKeyboardMap[inputSet[i].value].classList.add("bg-green-500");
+                virtualKeyboardMap[inputSet[i].value].classList.add("text-white");
+
+                if (i >= inputSet.length - 1) console.log("won");
             }, i * 100);
         }
     }
@@ -130,13 +164,18 @@ const Board = () => {
     }, [curRowNum, wordLen]);
 
     useEffect(() => {
+        if (Object.keys(virtualKeyboardKey).length <= 0) return;
+        handleOnKeyUp(virtualKeyboardKey.val);
+    }, [virtualKeyboardKey]);
+
+    useEffect(() => {
         document.addEventListener("keyup", handleOnKeyUp);
         return () => {
             document.removeEventListener("keyup", handleOnKeyUp);
         };
-    }, [curRow, isLast]);
+    }, [curInput, isLast]);
 
-    console.log(curRow, inuputSet, oriWord);
+    console.log({ curInput, inputSet, oriWord, virtualKeyboardMap, virtualKeyboardKey });
 
     return (
         <div ref={parentRef} className="max-w-sm flex flex-col items-center gap-y-2">
@@ -150,7 +189,7 @@ const Board = () => {
                                 <input
                                     type="text"
                                     key={i}
-                                    className="border-2 border-slate-200 w-16 h-16 p-2 text-center text-2xl outline-none rounded-lg del"
+                                    className="border-2 border-slate-200 w-16 h-16 p-2 text-center text-2xl outline-none rounded-lg font-bold uppercase"
                                     maxLength={1}
                                     readOnly
                                 />
