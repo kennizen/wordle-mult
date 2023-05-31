@@ -1,7 +1,12 @@
 import { useRecoilState, useRecoilValue } from "recoil";
 import { WORDS } from "../constants/5LetterWords";
 import { useEffect, useRef, useState } from "react";
-import { inputSetAtom, virtualKeyboardKeyAtom, virtualKeyboardMapAtom } from "../store/atoms";
+import {
+    inputSetAtom,
+    oriWordAtom,
+    virtualKeyboardKeyAtom,
+    virtualKeyboardMapAtom,
+} from "../store/atoms";
 
 const Board = () => {
     // states
@@ -9,7 +14,7 @@ const Board = () => {
     const [curRowNum, setCurRowNum] = useState(0);
     const [curInput, setCurInput] = useState<null | HTMLInputElement>(null);
     const [inputSet, setInputSet] = useRecoilState(inputSetAtom);
-    const [oriWord, setOriWord] = useState("");
+    const [oriWord, setOriWord] = useRecoilState(oriWordAtom);
     const [isLast, setIsLast] = useState(false);
 
     // hooks
@@ -89,6 +94,7 @@ const Board = () => {
         if (parentRef && parentRef.current) {
             let childrens = parentRef.current.children[curRowNum];
             if (childrens === undefined) return;
+            if (childrens.children[0] === undefined) return;
             setCurInput(childrens.children[0] as HTMLInputElement);
         }
     }

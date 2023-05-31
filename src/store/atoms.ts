@@ -14,3 +14,8 @@ export const virtualKeyboardKeyAtom = atom({
     key: "virtualKeyboardKey",
     default: {} as { val: string },
 });
+
+export const oriWordAtom = atom({
+    key: "oriWordAtom",
+    default: "",
+});
