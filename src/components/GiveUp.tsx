@@ -1,8 +1,10 @@
 import { useState } from "react";
+import Modal from "./Modal";
 
 const GiveUp = () => {
     // states
     const [open, setOpen] = useState(false);
+    const [showAnswer, setShowAnswer] = useState(false);
 
     // functions
     function handleOpenModal() {
@@ -13,6 +15,8 @@ const GiveUp = () => {
         setOpen(false);
     }
 
+    
+
     return (
         <div>
             <button
@@ -21,6 +25,24 @@ const GiveUp = () => {
             >
                 Give up
             </button>
+            {open && (
+                <Modal onClose={handleCloseModal}>
+                    <div className="flex flex-col p-4 gap-y-6">
+                        <p className="font-semibold text-xl">Are you sure you want to give up?</p>
+                        <div className="flex items-center justify-end gap-x-4">
+                            <button className="px-4 py-1 outline outline-2 outline-slate-200 rounded-md">
+                                Yes
+                            </button>
+                            <button
+                                onClick={handleCloseModal}
+                                className="px-4 py-1 bg-slate-200 rounded-md"
+                            >
+                                No
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
         </div>
     );
 };

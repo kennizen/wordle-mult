@@ -70,10 +70,11 @@ const Board = () => {
             return;
         }
 
-        if (key.length > 1) return;
-        if (!/^[A-Za-z]+$/.test(key)) return;
-        if (curInput === null) return;
-        if (isLast) return;
+        if (key === "") return;
+        else if (key.length > 1) return;
+        else if (!/^[A-Za-z]+$/.test(key)) return;
+        else if (curInput === null) return;
+        else if (isLast) return;
 
         const nextSibling = curInput.nextSibling;
 
