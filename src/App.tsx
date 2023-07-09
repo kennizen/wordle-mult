@@ -4,11 +4,13 @@ import SinglePlayerPage from "./pages/SinglePlayerPage";
 import VersusPage from "./pages/VersusPage";
 import Confetti from "./components/Confetti";
 import { useRecoilValue } from "recoil";
-import { winConditionAtom } from "./store/atoms";
+import { loseConditionAtom, winConditionAtom } from "./store/atoms";
+import LoseScreen from "./components/LoseScreen";
 
 function App() {
   // hooks
   const winCondiiton = useRecoilValue(winConditionAtom);
+  const loseCondition = useRecoilValue(loseConditionAtom);
 
   return (
     <>
@@ -18,6 +20,7 @@ function App() {
         <Route path="/versus" element={<VersusPage />} />
       </Routes>
       {winCondiiton && <Confetti />}
+      {loseCondition && <LoseScreen />}
     </>
   );
 }

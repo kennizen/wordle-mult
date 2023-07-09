@@ -3,6 +3,7 @@ import { WORDS } from "../constants/5LetterWords";
 import { useEffect, useRef, useState } from "react";
 import {
   inputSetAtom,
+  loseConditionAtom,
   oriWordAtom,
   virtualKeyboardKeyAtom,
   virtualKeyboardMapAtom,
@@ -17,16 +18,17 @@ const Board = () => {
   const [inputSet, setInputSet] = useRecoilState(inputSetAtom);
   const [oriWord, setOriWord] = useRecoilState(oriWordAtom);
   const [isLast, setIsLast] = useState(false);
+  const [winCondition, setWinCondition] = useRecoilState(winConditionAtom);
+  const [loseCondition, setLoseCondition] = useRecoilState(loseConditionAtom);
 
   // hooks
   const parentRef = useRef<null | HTMLDivElement>(null);
   const virtualKeyboardKey = useRecoilValue(virtualKeyboardKeyAtom);
   const virtualKeyboardMap = useRecoilValue(virtualKeyboardMapAtom);
-  const [winCondition, setWinCondition] = useRecoilState(winConditionAtom);
 
   // functions
   function handleOnKeyUp(e: KeyboardEvent | string) {
-    if (winCondition) return;
+    if (winCondition || loseCondition) return;
 
     let key = "";
 
@@ -110,7 +112,7 @@ const Board = () => {
     console.log({ typedWord });
 
     for (let i = 0; i < oriWord.length; i++) {
-      if (freqObj[oriWord[i]] !== undefined) freqObj[oriWord[i]] += 1;
+      if (freqObj[oriWord[i]]) freqObj[oriWord[i]] += 1;
       else freqObj[oriWord[i]] = 1;
       posObj[i] = oriWord[i];
     }
@@ -118,9 +120,12 @@ const Board = () => {
     for (let i = 0; i < typedWord.length; i++) {
       setTimeout(() => {
         virtualKeyboardMap[inputSet[i].value].classList.remove("bg-slate-300");
+        virtualKeyboardMap[inputSet[i].value].classList.remove("bg-slate-500");
+        virtualKeyboardMap[inputSet[i].value].classList.remove("bg-green-500");
+        virtualKeyboardMap[inputSet[i].value].classList.remove("bg-yellow-500");
         virtualKeyboardMap[inputSet[i].value].classList.add("text-white");
 
-        if (freqObj[typedWord[i]] !== undefined && freqObj[typedWord[i]] > 0) {
+        if (freqObj[typedWord[i]] && freqObj[typedWord[i]] > 0) {
           freqObj[typedWord[i]] -= 1;
 
           if (posObj[i] === typedWord[i]) {
@@ -137,6 +142,8 @@ const Board = () => {
 
         inputSet[i].classList.add("border-none");
         inputSet[i].classList.add("text-white");
+
+        if (i === typedWord.length - 1 && curRowNum === 5) setLoseCondition(true);
       }, i * 75);
     }
 
@@ -157,7 +164,6 @@ const Board = () => {
         virtualKeyboardMap[inputSet[i].value].classList.add("text-white");
 
         if (i >= inputSet.length - 1) {
-          console.log("won");
           setWinCondition(true);
           setInputSet([]);
         }
@@ -167,7 +173,7 @@ const Board = () => {
 
   // lifecycles
   useEffect(() => {
-    const word = WORDS[Math.floor(Math.random() * (WORDS.length - 0 + 1) + 0)].toLowerCase();
+    const word = WORDS[Math.floor(Math.random() * (WORDS.length + 1))].toLowerCase();
     setOriWord(word);
     setWordLen(word.length);
   }, []);
@@ -186,9 +192,9 @@ const Board = () => {
     return () => {
       document.removeEventListener("keyup", handleOnKeyUp);
     };
-  }, [curInput, isLast, winCondition]);
+  }, [curInput, isLast, winCondition, loseCondition]);
 
-  console.log({ curInput, inputSet, oriWord, virtualKeyboardMap, virtualKeyboardKey });
+  console.log({ curInput, inputSet, oriWord, virtualKeyboardMap, virtualKeyboardKey, curRowNum });
 
   return (
     <div ref={parentRef} className="max-w-sm flex flex-col items-center gap-y-2">

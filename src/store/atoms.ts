@@ -24,3 +24,8 @@ export const winConditionAtom = atom({
   key: "winConditionAtom",
   default: false,
 });
+
+export const loseConditionAtom = atom({
+  key: "loseConditionAtom",
+  default: false,
+});

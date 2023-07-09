@@ -8,7 +8,7 @@ const SinglePlayerPage = () => {
         <MainLayout>
             <section className="flex w-full h-[65%]">
                 <div className="w-96 bg-red-200"></div>
-                <div className="flex-1 flex flex-col py-4 px-16 gap-y-4">
+                <div className="flex-1 flex flex-col py-4 px-16 gap-y-10">
                     <GiveUp />
                     <div className="flex justify-center">
                         <Board />
