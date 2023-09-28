@@ -29,3 +29,8 @@ export const loseConditionAtom = atom({
   key: "loseConditionAtom",
   default: false,
 });
+
+export const beginGameAtom = atom({
+  key: "beginGameAtom",
+  default: false,
+});

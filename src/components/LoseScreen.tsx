@@ -1,6 +1,6 @@
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import Modal from "./Modal";
-import { loseConditionAtom, oriWordAtom } from "../store/atoms";
+import { beginGameAtom, loseConditionAtom, oriWordAtom } from "../store/atoms";
 import { useNavigate } from "react-router-dom";
 
 const LoseScreen = () => {
@@ -8,10 +8,12 @@ const LoseScreen = () => {
   const oriWord = useRecoilValue(oriWordAtom);
   const navigate = useNavigate();
   const setLoseCondition = useSetRecoilState(loseConditionAtom);
+  const setBeginGame = useSetRecoilState(beginGameAtom);
 
   // functions
   function handlePlayAgain() {
     setLoseCondition(false);
+    setBeginGame(false);
     navigate("/", { replace: true });
   }
 
@@ -23,10 +25,7 @@ const LoseScreen = () => {
           The word was: <span className="ml-1 text-red-500">{oriWord}</span>
         </p>
         <div className="flex items-center justify-end gap-x-4">
-          <button
-            onClick={handlePlayAgain}
-            className="px-4 py-1 bg-slate-200 rounded-md hover:bg-slate-300"
-          >
+          <button onClick={handlePlayAgain} className="px-4 py-1 bg-slate-200 rounded-md hover:bg-slate-300">
             Play again
           </button>
         </div>
