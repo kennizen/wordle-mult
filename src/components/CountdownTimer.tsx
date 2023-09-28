@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSetRecoilState } from "recoil";
 import { loseConditionAtom } from "../store/atoms";
 
-const SECONDS_START = 5;
+const SECONDS_START = 59;
 
 interface IProps {
   start: number;

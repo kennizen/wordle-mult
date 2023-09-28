@@ -19,7 +19,7 @@ const SinglePlayerPage = () => {
           <div className="flex-1 flex flex-col py-4 px-16 gap-y-10">
             <div className="flex items-center justify-between h-[56px]">
               <GiveUp />
-              {beginGame && <CountdownTimer start={1} />}
+              {beginGame && <CountdownTimer start={5} />}
             </div>
             <div className="flex justify-center">
               <Board />
