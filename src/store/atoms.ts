@@ -34,3 +34,8 @@ export const beginGameAtom = atom({
   key: "beginGameAtom",
   default: false,
 });
+
+export const winTimeAtom = atom({
+  key: "winTimeAtom",
+  default: "",
+});

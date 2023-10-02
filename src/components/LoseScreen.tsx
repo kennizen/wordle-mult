@@ -1,21 +1,12 @@
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilValue } from "recoil";
 import Modal from "./Modal";
-import { beginGameAtom, loseConditionAtom, oriWordAtom } from "../store/atoms";
-import { useNavigate } from "react-router-dom";
+import { oriWordAtom } from "../store/atoms";
+import usePlayAgain from "../hooks/usePlayAgain";
 
 const LoseScreen = () => {
   // hooks
   const oriWord = useRecoilValue(oriWordAtom);
-  const navigate = useNavigate();
-  const setLoseCondition = useSetRecoilState(loseConditionAtom);
-  const setBeginGame = useSetRecoilState(beginGameAtom);
-
-  // functions
-  function handlePlayAgain() {
-    setLoseCondition(false);
-    setBeginGame(false);
-    navigate("/", { replace: true });
-  }
+  const { handlePlayAgain } = usePlayAgain();
 
   return (
     <Modal>

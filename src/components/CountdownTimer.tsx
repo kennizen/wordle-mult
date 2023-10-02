@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { useSetRecoilState } from "recoil";
-import { loseConditionAtom } from "../store/atoms";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
+import { loseConditionAtom, winConditionAtom, winTimeAtom } from "../store/atoms";
 
 const SECONDS_START = 59;
 
@@ -11,28 +11,30 @@ interface IProps {
 const CountdownTimer = ({ start }: IProps) => {
   // states
   const [minutes, setMinutes] = useState(start);
-  const [seconds, setSeconds] = useState(SECONDS_START);
-  const setLoseCondition = useSetRecoilState(loseConditionAtom);
+  const [seconds, setSeconds] = useState(0);
+  const [loseCondition, setLoseCondition] = useRecoilState(loseConditionAtom);
+  const setWinTime = useSetRecoilState(winTimeAtom);
 
   // hooks
-  const time = useRef<number>(new Date().getTime());
+  const time = useRef<number>(Date.now());
   const updatedTime = useRef<number>();
+  const winCondition = useRecoilValue(winConditionAtom);
 
   // consts
   let requestTimer = useRef<number>(-1);
 
   // function for the countdown timer
   function showTimer() {
-    updatedTime.current = new Date().getTime();
+    updatedTime.current = Date.now();
+
     if (updatedTime.current - time.current >= 1000) {
       setSeconds((prev) => {
-        if (prev <= 0) {
-          return SECONDS_START;
-        }
+        if (prev <= 0) return SECONDS_START;
         return prev - 1;
       });
-      time.current = new Date().getTime();
+      time.current = Date.now();
     }
+
     requestTimer.current = requestAnimationFrame(showTimer);
   }
 
@@ -45,11 +47,18 @@ const CountdownTimer = ({ start }: IProps) => {
   }, []);
 
   useEffect(() => {
-    if (seconds <= 0) {
+    if (winCondition) {
+      setWinTime(`${minutes}:${seconds}`);
+      cancelAnimationFrame(requestTimer.current);
+      setMinutes(0);
+      setSeconds(0);
+    }
+  }, [winCondition]);
+
+  useEffect(() => {
+    if (seconds === SECONDS_START) {
       setMinutes((prev) => {
-        if (prev < 0) {
-          return 0;
-        }
+        if (prev < 0) return 0;
         return prev - 1;
       });
     }
@@ -58,9 +67,20 @@ const CountdownTimer = ({ start }: IProps) => {
   useEffect(() => {
     if (minutes < 0) {
       setLoseCondition(true);
+      setSeconds(0);
       cancelAnimationFrame(requestTimer.current);
     }
   }, [minutes]);
+
+  useEffect(() => {
+    if (loseCondition) {
+      cancelAnimationFrame(requestTimer.current);
+      setMinutes(0);
+      setSeconds(0);
+    }
+  }, [loseCondition]);
+
+  console.log("running");
 
   return (
     <div>
