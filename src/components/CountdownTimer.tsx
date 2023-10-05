@@ -48,7 +48,7 @@ const CountdownTimer = ({ start }: IProps) => {
 
   useEffect(() => {
     if (winCondition) {
-      setWinTime(`${minutes}:${seconds}`);
+      setWinTime(`${start - minutes}:${60 - seconds}`);
       cancelAnimationFrame(requestTimer.current);
       setMinutes(0);
       setSeconds(0);
@@ -79,8 +79,6 @@ const CountdownTimer = ({ start }: IProps) => {
       setSeconds(0);
     }
   }, [loseCondition]);
-
-  console.log("running");
 
   return (
     <div>

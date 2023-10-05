@@ -5,7 +5,7 @@ interface IProps {
   children: React.ReactNode;
 }
 
-const socket = io(import.meta.env.VITE_BACKEND_URL);
+// const socket = io(import.meta.env.VITE_BACKEND_URL);
 
 const SocketContext = createContext<Socket<any, any> | null>(null);
 
