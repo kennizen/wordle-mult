@@ -26,12 +26,14 @@ const PlayerTwoInfo = () => {
       <div className="flex flex-col gap-y-4">
         <p className="font-semibold">Tries left</p>
         <div className="flex items-center gap-x-1">
-          {Array(6).fill(0).map((_, i) => (
-            <div
-              key={i}
-              className="border-2 bg-white border-slate-200 w-16 h-16 p-2 text-center text-2xl outline-none rounded-lg font-bold uppercase"
-            ></div>
-          ))}
+          {Array(6)
+            .fill(0)
+            .map((_, i) => (
+              <div
+                key={i}
+                className="border-2 bg-white border-slate-200 w-16 h-16 p-2 text-center text-2xl outline-none rounded-lg font-bold uppercase"
+              ></div>
+            ))}
         </div>
       </div>
     </>

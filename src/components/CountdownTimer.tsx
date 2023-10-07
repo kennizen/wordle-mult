@@ -2,16 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { loseConditionAtom, winConditionAtom, winTimeAtom } from "../store/atoms";
 
-const SECONDS_START = 59;
-
 interface IProps {
-  start: number;
+  startSeconds: number;
 }
 
-const CountdownTimer = ({ start }: IProps) => {
+const CountdownTimer = ({ startSeconds }: IProps) => {
   // states
-  const [minutes, setMinutes] = useState(start);
-  const [seconds, setSeconds] = useState(0);
+  const [seconds, setSeconds] = useState(startSeconds);
   const [loseCondition, setLoseCondition] = useRecoilState(loseConditionAtom);
   const setWinTime = useSetRecoilState(winTimeAtom);
 
@@ -23,13 +20,28 @@ const CountdownTimer = ({ start }: IProps) => {
   // consts
   let requestTimer = useRef<number>(-1);
 
+  /**
+   * function to calculate the time in h:m:s
+   */
+  function generateTimeString(seconds: number) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    
+    return `${minutes < 10 ? "0" + minutes : minutes}:${
+      remainingSeconds < 10 ? "0" + remainingSeconds : remainingSeconds
+    }`;
+  }
+
   // function for the countdown timer
   function showTimer() {
     updatedTime.current = Date.now();
 
     if (updatedTime.current - time.current >= 1000) {
       setSeconds((prev) => {
-        if (prev <= 0) return SECONDS_START;
+        if (prev <= 0) {
+          cancelAnimationFrame(requestTimer.current);
+          return 0;
+        }
         return prev - 1;
       });
       time.current = Date.now();
@@ -48,44 +60,25 @@ const CountdownTimer = ({ start }: IProps) => {
 
   useEffect(() => {
     if (winCondition) {
-      setWinTime(`${start - minutes}:${60 - seconds}`);
-      cancelAnimationFrame(requestTimer.current);
-      setMinutes(0);
-      setSeconds(0);
-    }
-  }, [winCondition]);
-
-  useEffect(() => {
-    if (seconds === SECONDS_START) {
-      setMinutes((prev) => {
-        if (prev < 0) return 0;
-        return prev - 1;
-      });
-    }
-  }, [seconds]);
-
-  useEffect(() => {
-    if (minutes < 0) {
-      setLoseCondition(true);
-      setSeconds(0);
+      setWinTime(generateTimeString(startSeconds - seconds));
       cancelAnimationFrame(requestTimer.current);
     }
-  }, [minutes]);
+  }, [winCondition, seconds]);
 
   useEffect(() => {
     if (loseCondition) {
       cancelAnimationFrame(requestTimer.current);
-      setMinutes(0);
-      setSeconds(0);
     }
   }, [loseCondition]);
+
+  useEffect(() => {
+    if (seconds <= 0) setLoseCondition(true);
+  }, [seconds]);
 
   return (
     <div>
       <p className="font-semibold text-lg text-gray-600">Time Left</p>
-      <p className="text-center font-bold text-xl text-gray-700">{`${
-        minutes <= -1 ? "00" : minutes < 10 ? "0" + minutes : minutes
-      }:${seconds < 10 ? "0" + seconds : seconds}`}</p>
+      <p className="text-center font-bold text-xl text-gray-700">{generateTimeString(seconds)}</p>
     </div>
   );
 };
