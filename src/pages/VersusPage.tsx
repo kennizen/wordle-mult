@@ -9,60 +9,98 @@ import CountdownTimer from "../components/CountdownTimer";
 import PlayerTwoInfo from "../components/PlayerTwoInfo";
 import InvitePlayerModal from "../components/InvitePlayerModal";
 import { useSearchParams } from "react-router-dom";
-import { useRecoilValue } from "recoil";
+import { useRecoilState } from "recoil";
 import { beginGameAtom } from "../store/atoms";
+import Modal from "../components/Modal";
+import GameStartCountdown from "../components/GameStartCountdown";
 
 const VersusPage = () => {
   // hooks
   const socket = useSocketContext();
   const [params, _] = useSearchParams();
-  const beginGame = useRecoilValue(beginGameAtom);
+  const [beginGame, setBeginGame] = useRecoilState(beginGameAtom);
 
   // states
-  const [userId, setUserId] = useState<string | null>(null);
+  const [roomId, setRoomId] = useState<string | null>(null);
+  const [playerJoined, setPlayerJoined] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  // consts
+  const roomIdFromParams = params.get("room");
 
   // handlers
   function joinRoom() {
-    socket?.on("connect", () => {
-      socket.emit("join", params.get("room") === null ? userId : params.get("room"));
-    });
+    socket?.emit("join", roomIdFromParams === null ? roomId : roomIdFromParams);
+  }
+
+  function handleStartGame() {
+    socket?.emit("start-game", roomId);
+    setReady(true);
   }
 
   // lifecycles
   useEffect(() => {
-    setUserId(uuidv4());
+    setRoomId(uuidv4());
   }, []);
 
   useEffect(() => {
-    if (userId === null) return;
+    if (roomId === null || socket === null) return;
     joinRoom();
-  }, [userId]);
+  }, [roomId, socket]);
 
-  console.log(params.get("room"));
+  useEffect(() => {
+    socket?.on("player-joined", () => setPlayerJoined(true));
+    socket?.on("start-game", () => setReady(true));
+    // socket?.on("begin-game", () => console.log("got begin game"));
+  }, [socket]);
+
+  console.log(roomIdFromParams, socket);
 
   return (
     <>
-      {beginGame && (
-        <MainLayout>
-          <section className="flex w-full h-full">
-            <div className="flex-1 flex flex-col py-4 px-16 gap-y-10">
-              <div className="flex items-center justify-between h-[56px]">
-                <GiveUp />
-                <CountdownTimer startSeconds={30000} />
+      {ready && (
+        <>
+          <MainLayout>
+            <section className="flex w-full h-full">
+              <div className="flex-1 flex flex-col py-4 px-16 gap-y-10">
+                <div className="flex items-center justify-between h-[56px]">
+                  <GiveUp />
+                  {beginGame && <CountdownTimer startSeconds={30000} />}
+                </div>
+                <div className="flex items-center flex-col gap-y-20">
+                  <Board />
+                  <VirtualKeyboard />
+                </div>
               </div>
-              <div className="flex items-center flex-col gap-y-20">
-                <Board />
-                <VirtualKeyboard />
+              <div className="w-[40%]">
+                <div className="mb-36"></div>
+                <PlayerTwoInfo />
               </div>
-            </div>
-            <div className="w-[40%]">
-              <div className="mb-36"></div>
-              <PlayerTwoInfo />
-            </div>
-          </section>
-        </MainLayout>
+            </section>
+          </MainLayout>
+          {!beginGame && <GameStartCountdown />}
+        </>
       )}
-      {userId !== null && <InvitePlayerModal uid={userId} />}
+      {!playerJoined && roomId !== null && roomIdFromParams === null && <InvitePlayerModal rid={roomId} />}
+      {playerJoined && !ready && (
+        <Modal open>
+          <div className="p-4">
+            <button
+              onClick={handleStartGame}
+              className="p-2 rounded-md bg-blue-50 border border-blue-500 text-blue-500 hover:bg-blue-100"
+            >
+              Start Game!
+            </button>
+          </div>
+        </Modal>
+      )}
+      {roomIdFromParams !== null && !ready && (
+        <Modal open>
+          <div className="p-4">
+            <p className="p-2">Waiting for host to start the game...</p>
+          </div>
+        </Modal>
+      )}
     </>
   );
 };

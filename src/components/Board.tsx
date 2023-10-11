@@ -2,6 +2,7 @@ import { useRecoilState, useRecoilValue } from "recoil";
 import { WORDS } from "../constants/5LetterWords";
 import { useEffect, useRef, useState } from "react";
 import {
+  beginGameAtom,
   inputSetAtom,
   loseConditionAtom,
   oriWordAtom,
@@ -25,10 +26,12 @@ const Board = () => {
   const parentRef = useRef<null | HTMLDivElement>(null);
   const virtualKeyboardKey = useRecoilValue(virtualKeyboardKeyAtom);
   const virtualKeyboardMap = useRecoilValue(virtualKeyboardMapAtom);
+  const beginGame = useRecoilValue(beginGameAtom);
 
   // functions
   function handleOnKeyUp(e: KeyboardEvent | string) {
     if (winCondition || loseCondition) return;
+    if (!beginGame) return;
 
     let key = "";
 
@@ -192,7 +195,7 @@ const Board = () => {
     return () => {
       document.removeEventListener("keyup", handleOnKeyUp);
     };
-  }, [curInput, isLast, winCondition, loseCondition]);
+  }, [curInput, isLast, winCondition, loseCondition, beginGame]);
 
   console.log({ curInput, inputSet, oriWord, virtualKeyboardMap, virtualKeyboardKey, curRowNum });
 

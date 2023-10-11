@@ -9,7 +9,7 @@ const LoseScreen = () => {
   const { handlePlayAgain } = usePlayAgain();
 
   return (
-    <Modal>
+    <Modal open>
       <div className="flex flex-col p-4 gap-y-6">
         <p className="font-semibold text-3xl flex items-center">You lost :(</p>
         <p className="font-semibold text-xl flex items-center">

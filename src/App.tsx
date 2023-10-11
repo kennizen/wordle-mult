@@ -11,7 +11,7 @@ function App() {
   // hooks
   const winCondiiton = useRecoilValue(winConditionAtom);
   const loseCondition = useRecoilValue(loseConditionAtom);
- 
+
   return (
     <>
       <Routes>

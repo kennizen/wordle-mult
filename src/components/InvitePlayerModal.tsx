@@ -3,15 +3,15 @@ import Modal from "./Modal";
 import { ReactComponent as CheckIcon } from "../assets/icons/check.svg";
 
 interface IProps {
-  uid: string;
+  rid: string;
 }
 
-const InvitePlayerModal = ({ uid }: IProps) => {
+const InvitePlayerModal = ({ rid }: IProps) => {
   // states
   const [copied, setCopied] = useState(false);
 
   // consts
-  const inviteLink = `${import.meta.env.VITE_CLIENT_URL}/versus?room=${uid}`;
+  const inviteLink = `${import.meta.env.VITE_CLIENT_URL}/versus?room=${rid}`;
 
   // handlers
   async function handleCopyInviteLink() {
