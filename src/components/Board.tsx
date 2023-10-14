@@ -1,5 +1,4 @@
 import { useRecoilState, useRecoilValue } from "recoil";
-import { WORDS } from "../constants/5LetterWords";
 import { useEffect, useRef, useState } from "react";
 import {
   beginGameAtom,
@@ -17,12 +16,12 @@ const Board = () => {
   const [curRowNum, setCurRowNum] = useState(0);
   const [curInput, setCurInput] = useState<null | HTMLInputElement>(null);
   const [inputSet, setInputSet] = useRecoilState(inputSetAtom);
-  const [oriWord, setOriWord] = useRecoilState(oriWordAtom);
   const [isLast, setIsLast] = useState(false);
   const [winCondition, setWinCondition] = useRecoilState(winConditionAtom);
   const [loseCondition, setLoseCondition] = useRecoilState(loseConditionAtom);
 
   // hooks
+  const oriWord = useRecoilValue(oriWordAtom);
   const parentRef = useRef<null | HTMLDivElement>(null);
   const virtualKeyboardKey = useRecoilValue(virtualKeyboardKeyAtom);
   const virtualKeyboardMap = useRecoilValue(virtualKeyboardMapAtom);
@@ -176,10 +175,8 @@ const Board = () => {
 
   // lifecycles
   useEffect(() => {
-    const word = WORDS[Math.floor(Math.random() * (WORDS.length + 1))].toLowerCase();
-    setOriWord(word);
-    setWordLen(word.length);
-  }, []);
+    setWordLen(oriWord.length);
+  }, [oriWord]);
 
   useEffect(() => {
     handleSetCurRow();

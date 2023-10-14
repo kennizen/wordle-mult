@@ -9,16 +9,20 @@ import CountdownTimer from "../components/CountdownTimer";
 import PlayerTwoInfo from "../components/PlayerTwoInfo";
 import InvitePlayerModal from "../components/InvitePlayerModal";
 import { useSearchParams } from "react-router-dom";
-import { useRecoilState } from "recoil";
-import { beginGameAtom } from "../store/atoms";
+import { useRecoilState, useSetRecoilState } from "recoil";
+import { beginGameAtom, oriWordAtom } from "../store/atoms";
 import Modal from "../components/Modal";
 import GameStartCountdown from "../components/GameStartCountdown";
+import { GET_GAME_WORD, GET_WORD_BY_ROOMID } from "../constants/queryKeys";
+import { getGameWord, getWordByRoomId, saveWord } from "../apis/game";
+import { useQuery, useMutation } from "@tanstack/react-query";
 
 const VersusPage = () => {
   // hooks
   const socket = useSocketContext();
   const [params, _] = useSearchParams();
   const [beginGame, setBeginGame] = useRecoilState(beginGameAtom);
+  const setOriWord = useSetRecoilState(oriWordAtom);
 
   // states
   const [roomId, setRoomId] = useState<string | null>(null);
@@ -27,6 +31,43 @@ const VersusPage = () => {
 
   // consts
   const roomIdFromParams = params.get("room");
+  const LoadingScreen = (
+    <div className="fixed top-0 left-0 w-full h-screen bg-black bg-opacity-50 flex items-center justify-center">
+      <p className="text-white font-semibold text-xl">Loading...</p>
+    </div>
+  );
+
+  // queries
+  const { isLoading: getGameWordLoading, data: getGameWordData } = useQuery({
+    queryKey: [GET_GAME_WORD],
+    queryFn: getGameWord,
+    onError(err) {
+      console.log(err);
+    },
+    enabled: roomIdFromParams === null,
+    refetchOnWindowFocus: false,
+  });
+
+  const { isLoading: getWordByRoomIdLoading, data: getWordByRoomIdData } = useQuery({
+    queryKey: [GET_WORD_BY_ROOMID],
+    queryFn: () => getWordByRoomId(roomIdFromParams!),
+    onError(err) {
+      console.log(err);
+    },
+    enabled: roomIdFromParams !== null,
+    refetchOnWindowFocus: false,
+  });
+
+  console.log("game word ", getGameWordData);
+  console.log("game word by roomn id", getWordByRoomIdData);
+
+  // mutations
+  const { isLoading: saveWordLoading, mutate } = useMutation({
+    mutationFn: saveWord,
+    onError(error, variables, context) {
+      console.log(error);
+    },
+  });
 
   // handlers
   function joinRoom() {
@@ -54,7 +95,25 @@ const VersusPage = () => {
     // socket?.on("begin-game", () => console.log("got begin game"));
   }, [socket]);
 
+  useEffect(() => {
+    if (getGameWordData !== undefined) setOriWord(getGameWordData.data.word);
+    else if (getWordByRoomIdData !== undefined) setOriWord(getWordByRoomIdData.data.word);
+  }, [getGameWordData, getWordByRoomIdData]);
+
+  useEffect(() => {
+    if (roomId === null || getGameWordData === undefined) return;
+    mutate({ roomId: roomId, word: getGameWordData.data.word });
+  }, [roomId, getGameWordData]);
+
   console.log(roomIdFromParams, socket);
+
+  if ((getGameWordLoading || saveWordLoading) && roomIdFromParams === null) {
+    return LoadingScreen;
+  }
+
+  if (getWordByRoomIdLoading && roomIdFromParams !== null) {
+    return LoadingScreen;
+  }
 
   return (
     <>
