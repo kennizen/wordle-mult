@@ -9,7 +9,7 @@ import CountdownTimer from "../components/CountdownTimer";
 import PlayerTwoInfo from "../components/PlayerTwoInfo";
 import InvitePlayerModal from "../components/InvitePlayerModal";
 import { useSearchParams } from "react-router-dom";
-import { useRecoilState, useSetRecoilState } from "recoil";
+import { useRecoilState } from "recoil";
 import { beginGameAtom, oriWordAtom } from "../store/atoms";
 import Modal from "../components/Modal";
 import GameStartCountdown from "../components/GameStartCountdown";
@@ -22,7 +22,7 @@ const VersusPage = () => {
   const socket = useSocketContext();
   const [params, _] = useSearchParams();
   const [beginGame, setBeginGame] = useRecoilState(beginGameAtom);
-  const setOriWord = useSetRecoilState(oriWordAtom);
+  const [oriword, setOriWord] = useRecoilState(oriWordAtom);
 
   // states
   const [roomId, setRoomId] = useState<string | null>(null);
@@ -31,6 +31,7 @@ const VersusPage = () => {
 
   // consts
   const roomIdFromParams = params.get("room");
+
   const LoadingScreen = (
     <div className="fixed top-0 left-0 w-full h-screen bg-black bg-opacity-50 flex items-center justify-center">
       <p className="text-white font-semibold text-xl">Loading...</p>
@@ -57,9 +58,6 @@ const VersusPage = () => {
     enabled: roomIdFromParams !== null,
     refetchOnWindowFocus: false,
   });
-
-  console.log("game word ", getGameWordData);
-  console.log("game word by roomn id", getWordByRoomIdData);
 
   // mutations
   const { isLoading: saveWordLoading, mutate } = useMutation({
@@ -92,7 +90,6 @@ const VersusPage = () => {
   useEffect(() => {
     socket?.on("player-joined", () => setPlayerJoined(true));
     socket?.on("start-game", () => setReady(true));
-    // socket?.on("begin-game", () => console.log("got begin game"));
   }, [socket]);
 
   useEffect(() => {
@@ -105,7 +102,10 @@ const VersusPage = () => {
     mutate({ roomId: roomId, word: getGameWordData.data.word });
   }, [roomId, getGameWordData]);
 
-  console.log(roomIdFromParams, socket);
+  useEffect(() => {
+    if (oriword === "" || roomIdFromParams === null) return;
+    socket?.emit("player-is-ready", roomIdFromParams);
+  }, [oriword, socket]);
 
   if ((getGameWordLoading || saveWordLoading) && roomIdFromParams === null) {
     return LoadingScreen;
@@ -114,6 +114,8 @@ const VersusPage = () => {
   if (getWordByRoomIdLoading && roomIdFromParams !== null) {
     return LoadingScreen;
   }
+
+  console.log("player joined", playerJoined);
 
   return (
     <>
