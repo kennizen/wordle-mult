@@ -126,7 +126,7 @@ const VersusPage = () => {
               <div className="flex-1 flex flex-col py-4 px-16 gap-y-10">
                 <div className="flex items-center justify-between h-[56px]">
                   <GiveUp />
-                  {beginGame && <CountdownTimer startSeconds={30000} />}
+                  {beginGame && <CountdownTimer startSeconds={300} />}
                 </div>
                 <div className="flex items-center flex-col gap-y-20">
                   <Board />
